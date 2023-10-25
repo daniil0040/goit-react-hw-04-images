@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { useEffect, useState } from "react";
 import { Searchbar } from "./Searchbar/Searchbar";
 import {fetchImges} from "./api"
 import { ImageGallery } from "./ImageGallery/ImageGallery";
@@ -6,65 +6,49 @@ import { LoadMoreBtn } from "./LoadMoreBtn/LoadMoreBtn";
 import { Layout } from "./Layout";
 import { ThreeDots } from 'react-loader-spinner'
 
-export class App extends Component{
-  state = {
-    query: "",
-    images: [],
-    error: false,
-    loading: false,
-    page: 1,
-    totalImges: 0
-  }
+export const App = () => {
+  const [query,setQuery] = useState('');
+  const [images,setImages] = useState([]);
+  const [error,setError] = useState(false);
+  const [loading,setLoading] = useState(false);
+  const [page,setPage] = useState(1);
+  const [totalImges, setTotalImges] = useState(0);
 
-  async componentDidUpdate(prevProps, prevState) {
-    if (prevState.query !== this.state.query || prevState.page !== this.state.page) {
-      if (this.state.query.length === 0) {
-      this.setState({
-        images: []
-      })
+  useEffect(() => {
+        if (query.length === 0) {
+      setImages([])
         return
     }
-      try {
-        this.setState({
-          loading: true
-        })
-        const images = await fetchImges(this.state.query,this.state.page)
-        this.setState(prevState=>({
-          images: [...prevState.images,...images.hits],
-          loading: false,
-          totalImges: images.totalHits
-        }))
-      } catch (error) {
-        this.setState({
-        error: true
-      })
-      } finally {
-        this.setState({
-          loading: false
-        })
+  async function getImages() {
+    try {
+      setLoading(true)
+      const images = await fetchImges(query, page)
+      setImages(prevState=>[...prevState, ...images.hits]);
+      setLoading(false);
+      setTotalImges(images.totalHits);
+    } catch (error) {
+      setError(true)
+    } finally {
+      setLoading(false)
       }
-    }
   }
-
-handleLoadMore = () => {
-  this.setState(prevState => ({
-    page: prevState.page + 1
-  }));
+    getImages()
+  }, [query, page])
+  
+  const handleLoadMore = () => {
+    setPage(prevState=> prevState + 1)
   };
 
-  handleSubmit = (newQuery) => {
-this.setState({
-      query: newQuery.trim(),
-      images: [],
-      page: 1,
-    })
+  const handleSubmit = (newQuery) => {
+    setQuery(newQuery.trim());
+    setImages([]);
+    setPage(1);
   };
-
-  render() {
-        return (
+  
+return (
     <Layout>
-            <Searchbar onSubmit={this.handleSubmit} />
-            {this.state.loading && <ThreeDots 
+            <Searchbar onSubmit={handleSubmit} />
+            {loading && <ThreeDots 
 height="80" 
 width="80" 
 radius="9"
@@ -78,11 +62,10 @@ ariaLabel="three-dots-loading"
 wrapperClassName=""
 visible={true}
  />}
-            {this.state.error && <b>Whoops...Something went wrong.Try reload page!</b>}
-            {this.state.images.length > 0 && <ImageGallery items={this.state.images} />}
-            {(this.state.images.length > 0 && this.state.totalImges >= this.state.page * 12) && <LoadMoreBtn onLoadMore={this.handleLoadMore} />}
+            {error && <b>Whoops...Something went wrong.Try reload page!</b>}
+            {images.length > 0 && <ImageGallery items={images} />}
+            {(images.length > 0 && totalImges >= page * 12) && <LoadMoreBtn onLoadMore={handleLoadMore} />}
             
     </Layout>
   );
-    }
-  }
+}

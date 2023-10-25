@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { useState } from "react";
 import { GalleryItemImg } from "./ImageGalleryItem.styled"
 import Modal from 'react-modal';
 const customStyles = {
@@ -17,30 +17,22 @@ const customStyles = {
 // Make sure to bind modal to your appElement (https://reactcommunity.org/react-modal/accessibility/)
 Modal.setAppElement('#root');
 
-export class ImageGalleryItem extends Component{
-    state = {
-        isModalOpen: false,
+export const ImageGalleryItem = ({ item }) => {
+    const [isModalOpen, setIsModalOpen] = useState(false)
+
+    const openModal = () => {
+            setIsModalOpen(true)
     }
 
-    openModal = () => {
-        this.setState({
-            isModalOpen: true
-        })
+    const closeModal = () => {
+        setIsModalOpen(false)
     }
 
-closeModal = () => {
-        this.setState({
-            isModalOpen: false
-        })
-    }
-
-    render() {
-        const { item } = this.props
-        return <div>
-        <GalleryItemImg src={`${item.webformatURL}`} alt={`${item.tags}`} onClick={this.openModal}/>
+    return <div>
+        <GalleryItemImg src={`${item.webformatURL}`} alt={`${item.tags}`} onClick={openModal}/>
         <Modal
-        isOpen={this.state.isModalOpen}
-        onRequestClose={this.closeModal}
+        isOpen={isModalOpen}
+        onRequestClose={closeModal}
         style={customStyles}
         contentLabel="Galery Modal"
       >
@@ -49,5 +41,4 @@ closeModal = () => {
   </div>
       </Modal>
     </div>
-    }
 }
