@@ -16,7 +16,8 @@ export const App = () => {
 
   useEffect(() => {
         if (query.length === 0) {
-      setImages([])
+          setImages([])
+          setQuery('')
         return
     }
   async function getImages() {
